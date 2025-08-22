@@ -1,49 +1,40 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../models/app_user.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Register user
-  Future<AppUser?> register(
-      String name, String email, String phone, String password) async {
-    UserCredential cred = await _auth.createUserWithEmailAndPassword(
+  // Register method
+  Future<void> register(String name, String email, String phone, String password) async {
+    UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );
-    AppUser user = AppUser(
-      uid: cred.user!.uid,
-      name: name,
-      email: email,
-      phone: phone,
-    );
-    await _db.collection("users").doc(user.uid).set(user.toMap());
-    return user;
+
+    User? user = userCredential.user;
+
+    if (user != null) {
+      await _firestore.collection('users').doc(user.uid).set({
+        'name': name,
+        'email': email,
+        'phone': phone,
+        'role': 'user', // default role
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
   }
 
-  // Login
-  Future<AppUser?> login(String email, String password) async {
-    UserCredential cred = await _auth.signInWithEmailAndPassword(
+  // Login method
+  Future<User?> login(String email, String password) async {
+    UserCredential userCredential = await _auth.signInWithEmailAndPassword(
       email: email,
       password: password,
     );
-    DocumentSnapshot snapshot =
-    await _db.collection("users").doc(cred.user!.uid).get();
-    return AppUser.fromMap(snapshot.data() as Map<String, dynamic>, cred.user!.uid);
+    return userCredential.user;
   }
 
-  // Get current user
-  Future<AppUser?> getCurrentUser() async {
-    User? user = _auth.currentUser;
-    if (user == null) return null;
-    DocumentSnapshot snapshot =
-    await _db.collection("users").doc(user.uid).get();
-    return AppUser.fromMap(snapshot.data() as Map<String, dynamic>, user.uid);
-  }
-
-  // Logout
+  // 👇 Logout method (this was missing)
   Future<void> logout() async {
     await _auth.signOut();
   }

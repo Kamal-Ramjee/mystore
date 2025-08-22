@@ -39,11 +39,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       "phone": phoneController.text,
     });
     ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Profile updated successfully")));
+      const SnackBar(content: Text("Profile updated successfully")),
+    );
   }
 
   Future<void> _logout() async {
-    await _auth.logout();
+    await _auth.logout(); // ✅ now works
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -56,31 +57,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(title: const Text("Profile")),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(children: [
-          ListTile(
-            leading: Icon(Icons.history),
-            title: Text("Order History"),
-            onTap: () {
-              Navigator.pushNamed(context, "/orders");
-            },
-          ),
-
-          TextField(
-            controller: nameController,
-            decoration: const InputDecoration(labelText: "Name"),
-          ),
-          TextField(
-            controller: phoneController,
-            decoration: const InputDecoration(labelText: "Phone"),
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(onPressed: _updateProfile, child: const Text("Save")),
-          const SizedBox(height: 20),
-          ElevatedButton(
+        child: Column(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.history),
+              title: const Text("Order History"),
+              onTap: () {
+                Navigator.pushNamed(context, "/orders");
+              },
+            ),
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(labelText: "Name"),
+            ),
+            TextField(
+              controller: phoneController,
+              decoration: const InputDecoration(labelText: "Phone"),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _updateProfile,
+              child: const Text("Save"),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
               onPressed: _logout,
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text("Logout")),
-        ]),
+              child: const Text("Logout"),
+            ),
+          ],
+        ),
       ),
     );
   }

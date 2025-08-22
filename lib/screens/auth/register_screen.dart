@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../home_screen.dart';
+import 'login_screen.dart'; // 👈 Import Login Screen
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -24,7 +25,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (_) => const HomeScreen()));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
       setState(() => loading = false);
     }
@@ -38,36 +40,51 @@ class _RegisterScreenState extends State<RegisterScreen> {
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
-          child: Column(children: [
-            TextFormField(
-              decoration: const InputDecoration(labelText: "Name"),
-              onChanged: (v) => name = v,
-              validator: (v) => v!.isEmpty ? "Enter name" : null,
-            ),
-            TextFormField(
-              decoration: const InputDecoration(labelText: "Email"),
-              onChanged: (v) => email = v,
-              validator: (v) => v!.contains("@") ? null : "Enter valid email",
-            ),
-            TextFormField(
-              decoration: const InputDecoration(labelText: "Phone"),
-              onChanged: (v) => phone = v,
-              validator: (v) => v!.isEmpty ? "Enter phone" : null,
-            ),
-            TextFormField(
-              decoration: const InputDecoration(labelText: "Password"),
-              obscureText: true,
-              onChanged: (v) => password = v,
-              validator: (v) => v!.length < 6 ? "Password too short" : null,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: loading ? null : _register,
-              child: loading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text("Register"),
-            ),
-          ]),
+          child: Column(
+            children: [
+              TextFormField(
+                decoration: const InputDecoration(labelText: "Name"),
+                onChanged: (v) => name = v,
+                validator: (v) => v!.isEmpty ? "Enter name" : null,
+              ),
+              TextFormField(
+                decoration: const InputDecoration(labelText: "Email"),
+                onChanged: (v) => email = v,
+                validator: (v) => v!.contains("@") ? null : "Enter valid email",
+              ),
+              TextFormField(
+                decoration: const InputDecoration(labelText: "Phone"),
+                onChanged: (v) => phone = v,
+                validator: (v) => v!.isEmpty ? "Enter phone" : null,
+              ),
+              TextFormField(
+                decoration: const InputDecoration(labelText: "Password"),
+                obscureText: true,
+                onChanged: (v) => password = v,
+                validator: (v) =>
+                v!.length < 6 ? "Password too short" : null,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: loading ? null : _register,
+                child: loading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text("Register"),
+              ),
+              const SizedBox(height: 10),
+
+              // 👇 Login Button
+              TextButton(
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  );
+                },
+                child: const Text("Already have an account? Login"),
+              ),
+            ],
+          ),
         ),
       ),
     );

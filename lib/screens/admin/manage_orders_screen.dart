@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class ManageOrdersScreen extends StatelessWidget {
+class ManageOrdersScreen extends StatefulWidget {
   const ManageOrdersScreen({super.key});
 
+  @override
+  State<ManageOrdersScreen> createState() => _ManageOrdersScreenState();
+}
+
+class _ManageOrdersScreenState extends State<ManageOrdersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,54 +32,96 @@ class ManageOrdersScreen extends StatelessWidget {
           return ListView.builder(
             itemCount: orders.length,
             itemBuilder: (context, index) {
-              var order = orders[index];
-              var orderData = order.data() as Map<String, dynamic>;
+              final orderDoc = orders[index];
+              final orderData = orderDoc.data() as Map<String, dynamic>;
 
-              final orderId = order.id;
-              final total = orderData['totalAmount'] ?? 0;
-              final status = orderData['orderStatus'] ?? "Pending";
-              final items = orderData['items'] as List<dynamic>? ?? [];
+              final orderId = orderData["orderId"] ?? orderDoc.id;
+              final total = (orderData["total"] is int)
+                  ? (orderData["total"] as int).toDouble()
+                  : (orderData["total"] ?? 0.0) as double;
+
+              String status = orderData["status"] ?? "Pending";
+
+              // Ensure the status is one of the valid options, as you requested.
+              final List<String> validStatuses = ["Pending", "Shipped", "Delivered"];
+              if (!validStatuses.contains(status)) {
+                status = "Pending";
+              }
+
+              // User details
+              final userName = orderData["userName"] ?? "Unknown";
+              final userEmail = orderData["userEmail"] ?? "";
+              final userPhone = orderData["userPhone"] ?? "";
+
+              // Items
+              final items = orderData["items"] as List<dynamic>? ?? [];
+
+              // Order Date
+              DateTime dateTime = DateTime.now();
+              final createdAt = orderData["createdAt"];
+              if (createdAt is Timestamp) {
+                dateTime = createdAt.toDate();
+              }
+              final formattedDate =
+                  "${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}";
 
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 child: ExpansionTile(
-                  title: Text("Order #$orderId"),
-                  subtitle: Text("Total: \$${total.toStringAsFixed(2)}"),
+                  title: Text("Order #$orderId - $userName"),
+                  subtitle: Text(
+                      "Total: \$${total.toStringAsFixed(2)}\nStatus: $status"),
                   children: [
-                    // Show items in the order
-                    ...items.map((item) {
-                      return ListTile(
-                        title: Text(item['name']),
-                        subtitle: Text(
-                          "Qty: ${item['quantity']} × \$${item['price']}",
-                        ),
-                      );
-                    }).toList(),
-                    // Status Dropdown
                     Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Text("Email: $userEmail"),
+                          Text("Phone: $userPhone"),
+                          Text("Order Date: $formattedDate"),
+                          const SizedBox(height: 8),
                           const Text(
-                            "Status:",
+                            "Items:",
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          DropdownButton<String>(
-                            value: status,
-                            items: ["Pending", "Shipped", "Delivered"]
-                                .map((s) =>
-                                DropdownMenuItem(value: s, child: Text(s)))
-                                .toList(),
-                            onChanged: (value) {
-                              if (value != null) {
-                                FirebaseFirestore.instance
-                                    .collection("orders")
-                                    .doc(orderId)
-                                    .update({"orderStatus": value});
-                              }
-                            },
+                          ...items.map((item) {
+                            final name = item["name"] ?? "";
+                            final quantity = item["quantity"] ?? 0;
+                            final price = (item["price"] is int)
+                                ? (item["price"] as int).toDouble()
+                                : (item["price"] ?? 0.0) as double;
+                            return ListTile(
+                              title: Text(name),
+                              subtitle: Text("Qty: $quantity × \$${price.toStringAsFixed(2)}"),
+                              dense: true,
+                            );
+                          }).toList(),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                "Update Status:",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              DropdownButton<String>(
+                                value: status,
+                                items: validStatuses
+                                    .map((s) => DropdownMenuItem(
+                                    value: s, child: Text(s)))
+                                    .toList(),
+                                onChanged: (String? newValue) {
+                                  if (newValue != null) {
+                                    FirebaseFirestore.instance
+                                        .collection("orders")
+                                        .doc(orderDoc.id)
+                                        .update({"status": newValue});
+                                  }
+                                },
+                              ),
+                            ],
                           ),
+                          const SizedBox(height: 8),
                         ],
                       ),
                     )

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mystore/screens/home_screen.dart';
 import '../admin/admin_dashboard.dart';
+import 'register_screen.dart';  // 👈 Import Register Screen
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -74,6 +75,18 @@ class _LoginScreenState extends State<LoginScreen> {
             ElevatedButton(
               onPressed: loginUser,
               child: const Text("Login"),
+            ),
+            const SizedBox(height: 10),
+
+            // 👇 Register button
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                );
+              },
+              child: const Text("Don't have an account? Register"),
             ),
           ],
         ),
