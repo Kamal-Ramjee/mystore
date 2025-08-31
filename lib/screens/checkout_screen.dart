@@ -23,6 +23,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _addressController = TextEditingController();
 
   bool _loadingUser = true;
 
@@ -41,6 +42,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       _nameController.text = data["name"] ?? user.displayName ?? "";
       _emailController.text = user.email ?? "";
       _phoneController.text = data["phone"] ?? "";
+      _addressController.text = data["address"] ?? "";
 
       setState(() {
         _loadingUser = false;
@@ -55,6 +57,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         "name": _nameController.text,
         "email": _emailController.text,
         "phone": _phoneController.text,
+        "address": _addressController.text,
       }, SetOptions(merge: true));
     }
   }
@@ -91,6 +94,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               controller: _phoneController,
               decoration: const InputDecoration(labelText: "Phone"),
               keyboardType: TextInputType.phone,
+            ),
+            TextField(
+              controller: _addressController,
+              decoration: const InputDecoration(labelText: "Address"),
             ),
 
             const Divider(height: 30),
@@ -132,6 +139,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     await orderService.placeOrder(
                       cart.cartItems,
                       cart.total,
+                      // address: _addressController.text, // include address
                     );
                     cart.clearCart();
 

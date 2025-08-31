@@ -23,11 +23,14 @@ class OrderService {
       "userName": userData["name"] ?? user.displayName ?? "Unknown",
       "userEmail": user.email ?? "",
       "userPhone": userData["phone"] ?? "",
-      "items": items.map((e) => {
+      "userAddress": userData["address"] ?? "", // ✅ NEW: store address
+      "items": items
+          .map((e) => {
         "name": e.name,
         "price": e.price,
         "quantity": e.quantity,
-      }).toList(),
+      })
+          .toList(),
       "total": total,
       "status": "Pending",
       "createdAt": FieldValue.serverTimestamp(),

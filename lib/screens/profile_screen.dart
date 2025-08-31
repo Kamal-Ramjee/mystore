@@ -18,6 +18,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   TextEditingController nameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
 
   @override
   void initState() {
@@ -30,6 +31,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() {
       nameController.text = doc["name"];
       phoneController.text = doc["phone"];
+      emailController.text = doc["email"];
     });
   }
 
@@ -37,6 +39,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     await _db.collection("users").doc(user.uid).update({
       "name": nameController.text,
       "phone": phoneController.text,
+      "email": phoneController.text,
     });
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Profile updated successfully")),
@@ -73,6 +76,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             TextField(
               controller: phoneController,
               decoration: const InputDecoration(labelText: "Phone"),
+            ),
+            TextField(
+              controller: emailController,
+              decoration: const InputDecoration(labelText: "Email"),
             ),
             const SizedBox(height: 20),
             ElevatedButton(

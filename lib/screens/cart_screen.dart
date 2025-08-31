@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/cart_service.dart';
+import '../models/cart_item.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -10,6 +11,18 @@ class CartScreen extends StatefulWidget {
 
 class _CartScreenState extends State<CartScreen> {
   final cart = CartService();
+
+  void updateQuantity(CartItem item, int change) {
+    setState(() {
+      final newQty = item.quantity + change;
+      if (newQty > 0) {
+        item.quantity = newQty;
+      } else {
+        // remove item if qty goes to 0
+        cart.removeFromCart(item.productId);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,9 +38,24 @@ class _CartScreenState extends State<CartScreen> {
         itemBuilder: (context, i) {
           final it = items[i];
           return ListTile(
+            leading: IconButton(
+              icon: const Icon(Icons.remove_circle_outline),
+              onPressed: () => updateQuantity(it, -1),
+            ),
             title: Text(it.name),
-            subtitle: Text('Qty: ${it.quantity}'),
-            trailing: Text('\$${(it.price * it.quantity).toStringAsFixed(2)}'),
+            subtitle: Row(
+              children: [
+                Text("Qty: ${it.quantity}"),
+                IconButton(
+                  icon: const Icon(Icons.add_circle_outline),
+                  onPressed: () => updateQuantity(it, 1),
+                ),
+              ],
+            ),
+            trailing: Text(
+              '\$${(it.price * it.quantity).toStringAsFixed(2)}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
           );
         },
       ),
@@ -36,8 +64,10 @@ class _CartScreenState extends State<CartScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Total: \$${cart.total.toStringAsFixed(2)}',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(
+              'Total: \$${cart.total.toStringAsFixed(2)}',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             ElevatedButton(
               onPressed: items.isEmpty
                   ? null
