@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/cart_item.dart';
+import '../services/cart_service.dart';
 import '../services/product_service.dart';
 import '../models/product.dart';
 import 'auth/login_screen.dart';
@@ -95,8 +97,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       appBar: AppBar(
-        title: const Text("BabyShopHub"),
-        backgroundColor: const Color(0xFF397CA9),
+        // backgroundColor: const Color(0xFF397CA9),
+        title: Image.asset(
+          "assets/BabyShopHub_LOGO.png", // your logo path
+          height: 40, // adjust size as needed
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -104,6 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+
       body: ListView(
         children: [
           // 🟢 Banner Carousel
@@ -232,6 +238,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemCount: filteredProducts.length,
                 itemBuilder: (context, index) {
                   final product = filteredProducts[index];
+// inside your widget build method where you return Card:
                   return Card(
                     elevation: 4,
                     shape: RoundedRectangleBorder(
@@ -246,14 +253,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) =>
-                                    ProductDetailScreen(productId: product.id),
+                                builder: (_) => ProductDetailScreen(productId: product.id),
                               ),
                             );
                           },
                           child: ClipRRect(
-                            borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(12)),
+                            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                             child: Image.network(
                               product.imageUrl,
                               height: 120,
@@ -276,8 +281,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: Text(
                             product.category,
-                            style: const TextStyle(
-                                color: Colors.grey, fontSize: 12),
+                            style: const TextStyle(color: Colors.grey, fontSize: 12),
                           ),
                         ),
                         Padding(
@@ -285,18 +289,26 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Text(
                             "\$${product.price.toStringAsFixed(2)}",
                             style: const TextStyle(
-                                color: Colors.green,
-                                fontWeight: FontWeight.bold),
+                                color: Colors.green, fontWeight: FontWeight.bold),
                           ),
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: ElevatedButton(
-                            onPressed: () async {
-                              await _addToCart(product);
+                            onPressed: () {
+                              // ✅ Add product to CartService
+                              CartService().addToCart(
+                                CartItem(
+                                  productId: product.id,
+                                  name: product.name,
+                                  price: product.price,
+                                  quantity: 1,
+                                  imageUrl: product.imageUrl,
+                                ),
+                              );
+
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text("Added to Cart")),
+                                const SnackBar(content: Text("Added to Cart")),
                               );
                             },
                             style: ElevatedButton.styleFrom(
@@ -313,6 +325,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                   );
+
                 },
               );
             },

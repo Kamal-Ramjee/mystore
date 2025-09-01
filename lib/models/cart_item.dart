@@ -8,7 +8,7 @@ class CartItem {
     required this.productId,
     required this.name,
     required this.price,
-    this.quantity = 1,
+    this.quantity = 1, required String imageUrl,
   });
 
   Map<String, dynamic> toMap() {
@@ -25,7 +25,7 @@ class CartItem {
       productId: map['productId'],
       name: map['name'],
       price: (map['price'] as num).toDouble(),
-      quantity: map['quantity'] ?? 1,
+      quantity: map['quantity'] ?? 1, imageUrl: '',
     );
   }
 }

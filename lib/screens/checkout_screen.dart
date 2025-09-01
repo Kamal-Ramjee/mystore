@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/cart_service.dart';
 import '../services/order_service.dart';
 import '../models/cart_item.dart';
-import 'home_screen.dart'; // make sure you have this screen
+import 'home_screen.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -71,101 +71,195 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Checkout")),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF397CA9),
+        title: const Text(
+          "Checkout",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        centerTitle: true,
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Editable user info
-            const Text("Your Information",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            // Section title
+            const Text(
+              "Your Information",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF397CA9),
+              ),
+            ),
             const SizedBox(height: 8),
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(labelText: "Name"),
-            ),
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: "Email"),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            TextField(
-              controller: _phoneController,
-              decoration: const InputDecoration(labelText: "Phone"),
-              keyboardType: TextInputType.phone,
-            ),
-            TextField(
-              controller: _addressController,
-              decoration: const InputDecoration(labelText: "Address"),
+
+            // Info fields inside a card
+            Card(
+              elevation: 3,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    _buildTextField(_nameController, "Name", Icons.person),
+                    _buildTextField(
+                        _emailController, "Email", Icons.email,
+                        keyboardType: TextInputType.emailAddress),
+                    _buildTextField(
+                        _phoneController, "Phone", Icons.phone,
+                        keyboardType: TextInputType.phone),
+                    _buildTextField(
+                        _addressController, "Address", Icons.home),
+                  ],
+                ),
+              ),
             ),
 
-            const Divider(height: 30),
+            const SizedBox(height: 20),
 
             // Order summary
-            const Text("Order Summary",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              "Order Summary",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF397CA9),
+              ),
+            ),
             const SizedBox(height: 8),
+
             Expanded(
               child: ListView.builder(
                 itemCount: cart.cartItems.length,
                 itemBuilder: (context, index) {
                   final CartItem item = cart.cartItems[index];
-                  return ListTile(
-                    title: Text(item.name),
-                    subtitle: Text("Qty: ${item.quantity}"),
-                    trailing: Text(
-                      "\$${(item.price * item.quantity).toStringAsFixed(2)}",
+                  return Card(
+                    elevation: 2,
+                    margin: const EdgeInsets.symmetric(vertical: 6),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ListTile(
+                      title: Text(
+                        item.name,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text("Qty: ${item.quantity}"),
+                      trailing: Text(
+                        "\$${(item.price * item.quantity).toStringAsFixed(2)}",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF397CA9),
+                        ),
+                      ),
                     ),
                   );
                 },
               ),
             ),
 
-            // Total
-            Text(
-              "Total: \$${cart.total.toStringAsFixed(2)}",
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-
-            // Place order button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () async {
-                  try {
-                    await _saveUserData(); // save latest user data
-                    await orderService.placeOrder(
-                      cart.cartItems,
-                      cart.total,
-                      // address: _addressController.text, // include address
-                    );
-                    cart.clearCart();
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Order placed successfully!"),
+            // Total & Place Order button
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.15),
+                    blurRadius: 8,
+                    offset: const Offset(0, -3),
+                  ),
+                ],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    "Total: \$${cart.total.toStringAsFixed(2)}",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF397CA9),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF397CA9),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                    );
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 14),
+                    ),
+                    onPressed: () async {
+                      try {
+                        await _saveUserData();
+                        await orderService.placeOrder(
+                          cart.cartItems,
+                          cart.total,
+                        );
+                        cart.clearCart();
 
-                    // redirect to HomeScreen after checkout
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const HomeScreen()),
-                          (route) => false,
-                    );
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Failed to place order: $e")),
-                    );
-                  }
-                },
-                child: const Text("Place Order"),
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Order placed successfully!"),
+                          ),
+                        );
+
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const HomeScreen()),
+                              (route) => false,
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text("Failed to place order: $e")),
+                        );
+                      }
+                    },
+                    child: const Text(
+                      "Place Order",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label,
+      IconData icon,
+      {TextInputType keyboardType = TextInputType.text}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: Icon(icon, color: const Color(0xFF397CA9)),
+          filled: true,
+          fillColor: const Color(0xFFF5F9FC),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
         ),
       ),
     );
